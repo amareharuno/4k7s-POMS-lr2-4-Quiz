@@ -1,4 +1,4 @@
-package com.bsuir.poms.quiz;
+package com.bsuir.poms.quiz.model;
 
 public class Question {
 
