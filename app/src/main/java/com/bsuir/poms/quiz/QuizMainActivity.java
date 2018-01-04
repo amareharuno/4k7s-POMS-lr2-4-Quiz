@@ -1,6 +1,5 @@
 package com.bsuir.poms.quiz;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -27,10 +26,9 @@ public class QuizMainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener authStateListener;
     FirebaseUser currentUser;
     FirebaseDatabase database;
+    DatabaseReference questionsDatabaseReference;
 
-    public static final int RC_SIGN_IN = 1;
-
-    private ViewPager mViewPager;
+    public final int RC_SIGN_IN = 1;
 
     private int currentQuestionId;
     private int questionsCount;
@@ -41,6 +39,14 @@ public class QuizMainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_quiz_pager);
 
         firebaseAuth = FirebaseAuth.getInstance();
+        database = FirebaseDatabase.getInstance();
+
+        // todo: ?
+        questionsDatabaseReference = database.getReference().child("questions");
+        // У тебя было так. У меня так не работает (хотя, когда я запускала прям твое - работало).
+        // Потому что сначала идет quiz-блабла, а под ним уже questions в бд
+//        questionsDatabaseReference = database.getReference("questions");
+
         authStateListener = firebaseAuth -> {
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
@@ -63,15 +69,10 @@ public class QuizMainActivity extends AppCompatActivity {
             }
         };
 
-//        ((App) getApplication()).setUser(currentUser);
-        database = FirebaseDatabase.getInstance();
+        // todo: for what?
+        // ((App) getApplication()).setUser(currentUser);
 
-        // У тебя было так. У меня так не работает (хотя, когда я запускала прям твое - работало).
-        // Потому что сначала идет quiz-блабла, а под ним уже questions в бд
-//        DatabaseReference referenceToQuestionsInDb = database.getReference("questions");
-        DatabaseReference referenceToQuestionsInDb = database.getReference().child("questions");
-
-        referenceToQuestionsInDb.addListenerForSingleValueEvent(new ValueEventListener() {
+        questionsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 currentQuestionId = 0;
@@ -84,9 +85,10 @@ public class QuizMainActivity extends AppCompatActivity {
             }
         });
 
-        mViewPager = findViewById(R.id.question_view_pager);
+        ViewPager mViewPager = findViewById(R.id.question_view_pager);
         mViewPager.setOffscreenPageLimit(2);
 
+        // todo: ?
         FragmentManager fragmentManager = getSupportFragmentManager();
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
             @Override

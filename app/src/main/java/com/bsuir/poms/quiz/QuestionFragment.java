@@ -83,8 +83,11 @@ public class QuestionFragment extends Fragment {
                     setRadioGroupUnclickable();
                     if (count == mAnswers.length) {
                         FirebaseDatabase database = FirebaseDatabase.getInstance();
-//                        DatabaseReference myRef = database.getReference("results");
+
+                        // todo: ?
                         DatabaseReference myRef = database.getReference().child("results");
+                        // DatabaseReference myRef = database.getReference("results"); // твой вариант был
+
                         Result result = new Result();
                         result.setId(myRef.push().getKey());
                         result.setEmail(((App) getActivity().getApplication()).getUser().getEmail());
@@ -108,9 +111,10 @@ public class QuestionFragment extends Fragment {
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
 
+        // todo: ?
+        DatabaseReference myRef = database.getReference().child("questions");
         // У тебя было так:
 //        DatabaseReference myRef = database.getReference("questions");
-        DatabaseReference myRef = database.getReference().child("questions");
 
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
