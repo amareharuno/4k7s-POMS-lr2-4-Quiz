@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
-ext.toolsVersion = '27.0.2'
-ext.firebaseVersion = '11.8.0'
+ext.toolsVersion = '26.0.2'
+ext.firebaseVersion = '11.4.2'
 
 android {
-    compileSdkVersion 27
+    compileSdkVersion 26
     buildToolsVersion toolsVersion
     defaultConfig {
         applicationId "com.bsuir.poms.quiz"
-        minSdkVersion 19
-        targetSdkVersion 27
+        minSdkVersion 16
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -29,11 +29,17 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    implementation "com.android.support:appcompat-v7:$toolsVersion"
     implementation "com.android.support:design:$toolsVersion"
+    implementation "com.android.support:appcompat-v7:$toolsVersion"
     implementation "com.android.support:support-v4:$toolsVersion"
+
+    compile "com.google.android.gms:play-services:$firebaseVersion"
+    compile "com.google.android.gms:play-services-plus:$firebaseVersion"
+
     implementation "com.google.firebase:firebase-database:$firebaseVersion"
     implementation "com.google.firebase:firebase-auth:$firebaseVersion"
+
+    compile 'com.firebaseui:firebase-ui-auth:3.1.0'
 
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
     testImplementation 'junit:junit:4.12'

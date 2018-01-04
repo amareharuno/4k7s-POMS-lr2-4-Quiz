@@ -40,7 +40,6 @@ public class QuestionFragment extends Fragment {
     private TextView mQuestionText;
 
     public QuestionFragment() {
-        // Required empty public constructor
     }
 
     public static QuestionFragment newInstance(int id) {
@@ -59,43 +58,46 @@ public class QuestionFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
         View view = inflater.inflate(R.layout.fragment_question, container, false);
 
         mRadioGroup = view.findViewById(R.id.answer_group);
         mConfirmButton = view.findViewById(R.id.confirm_button);
-        mConfirmButton.setOnClickListener(view1 -> {
-            int answer = mQuestion.getNumOfRightAnswer();
-            if (answer == getAnswerNum(mRadioGroup.getCheckedRadioButtonId())) {
-                view.setBackgroundColor(getResources().getColor(R.color.green));
-                mAnswers[mQuestion.getId()] = true;
-            } else {
-                view.setBackgroundColor(getResources().getColor(R.color.red));
-                mAnswers[mQuestion.getId()] = false;
-            }
-            mCheckedAnswers[mQuestion.getId()] = true;
-            int count = 0;
-            for (boolean checkedAnswer : mCheckedAnswers) {
-                if (checkedAnswer) count++;
-            }
-            setRadioGroupUnclickable();
-            if (count == mAnswers.length) {
-                FirebaseDatabase database = FirebaseDatabase.getInstance();
-                DatabaseReference myRef = database.getReference("results");
-                Result result = new Result();
-                result.setId(myRef.push().getKey());
-                result.setEmail(((App) getActivity().getApplication()).getUser().getEmail());
-                int score = 0;
-                for (boolean rightAnswer : mAnswers) {
-                    if (rightAnswer) score++;
-                }
-                result.setScore(score);
-                myRef.child(result.getId()).setValue(result);
-                Intent intent = new Intent(getActivity(), ResultActivity.class);
-                startActivity(intent);
-            }
-        });
+        mConfirmButton.setOnClickListener(
+                view1 -> {
+                    int answer = mQuestion.getNumOfRightAnswer();
+                    if (answer == getAnswerNum(mRadioGroup.getCheckedRadioButtonId())) {
+                        view.setBackgroundColor(getResources().getColor(R.color.green));
+                        mAnswers[mQuestion.getId()] = true;
+                    } else {
+                        view.setBackgroundColor(getResources().getColor(R.color.red));
+                        mAnswers[mQuestion.getId()] = false;
+                    }
+                    mCheckedAnswers[mQuestion.getId()] = true;
+                    int count = 0;
+                    for (boolean checkedAnswer : mCheckedAnswers) {
+                        if (checkedAnswer) count++;
+                    }
+                    setRadioGroupUnclickable();
+                    if (count == mAnswers.length) {
+                        FirebaseDatabase database = FirebaseDatabase.getInstance();
+//                        DatabaseReference myRef = database.getReference("results");
+                        DatabaseReference myRef = database.getReference().child("results");
+                        Result result = new Result();
+                        result.setId(myRef.push().getKey());
+                        result.setEmail(((App) getActivity().getApplication()).getUser().getEmail());
+                        int score = 0;
+                        for (boolean rightAnswer : mAnswers) {
+                            if (rightAnswer) score++;
+                        }
+                        result.setScore(score);
+                        myRef.child(result.getId()).setValue(result);
+                        Intent intent = new Intent(getActivity(), ResultActivity.class);
+                        startActivity(intent);
+                    }
+                });
 
         mAnswerOne = view.findViewById(R.id.answer_one);
         mAnswerTwo = view.findViewById(R.id.answer_two);
@@ -105,7 +107,11 @@ public class QuestionFragment extends Fragment {
         mQuestionText = view.findViewById(R.id.question_text);
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("questions");
+
+        // У тебя было так:
+//        DatabaseReference myRef = database.getReference("questions");
+        DatabaseReference myRef = database.getReference().child("questions");
+
         myRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -115,13 +121,15 @@ public class QuestionFragment extends Fragment {
 
                 mQuestion = dataSnapshot.child(questionId).getValue(Question.class);
 
-                mAnswerOne.setText(mQuestion.getFirstAnswer());
-                mAnswerTwo.setText(mQuestion.getSecondAnswer());
-                mAnswerThree.setText(mQuestion.getThirdAnswer());
-                mAnswerFour.setText(mQuestion.getFourthAnswer());
+                if (mQuestion != null) {
+                    mAnswerOne.setText(mQuestion.getFirstAnswer());
+                    mAnswerTwo.setText(mQuestion.getSecondAnswer());
+                    mAnswerThree.setText(mQuestion.getThirdAnswer());
+                    mAnswerFour.setText(mQuestion.getFourthAnswer());
 
-                mQuestionText.setText(mQuestion.getQuestion());
-                if (mCheckedAnswers[mQuestion.getId()]) setRadioGroupUnclickable();
+                    mQuestionText.setText(mQuestion.getQuestion());
+                    if (mCheckedAnswers[mQuestion.getId()]) setRadioGroupUnclickable();
+                }
             }
 
             @Override
