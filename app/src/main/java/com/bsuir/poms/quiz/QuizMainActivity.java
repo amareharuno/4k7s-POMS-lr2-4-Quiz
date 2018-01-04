@@ -9,6 +9,7 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.widget.Toast;
 
+import com.bsuir.poms.quiz.constant.Const;
 import com.firebase.ui.auth.AuthUI;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -28,7 +29,7 @@ public class QuizMainActivity extends AppCompatActivity {
     FirebaseDatabase database;
     DatabaseReference questionsDatabaseReference;
 
-    public final int RC_SIGN_IN = 1;
+    private final int RC_SIGN_IN = 1;
 
     private int currentQuestionId;
     private int questionsCount;
@@ -41,11 +42,7 @@ public class QuizMainActivity extends AppCompatActivity {
         firebaseAuth = FirebaseAuth.getInstance();
         database = FirebaseDatabase.getInstance();
 
-        // todo: ?
-        questionsDatabaseReference = database.getReference().child("questions");
-        // У тебя было так. У меня так не работает (хотя, когда я запускала прям твое - работало).
-        // Потому что сначала идет quiz-блабла, а под ним уже questions в бд
-//        questionsDatabaseReference = database.getReference("questions");
+        questionsDatabaseReference = database.getReference().child(Const.QUESTIONS_DB_KEY);
 
         authStateListener = firebaseAuth -> {
             FirebaseUser user = firebaseAuth.getCurrentUser();
@@ -70,16 +67,15 @@ public class QuizMainActivity extends AppCompatActivity {
         };
 
         // todo: for what?
-        // ((App) getApplication()).setUser(currentUser);
+        ((App) getApplication()).setUser(currentUser);
 
         questionsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 currentQuestionId = 0;
                 questionsCount = (int) dataSnapshot.getChildrenCount();
-                System.out.println("currentQuestionId: " + currentQuestionId  + " questionsCount: " + questionsCount);
-                // выводит все верно - 0 позиция, 10 вопросов
             }
+
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
@@ -95,6 +91,7 @@ public class QuizMainActivity extends AppCompatActivity {
             public Fragment getItem(int position) {
                 return QuestionFragment.newInstance(position);
             }
+
             @Override
             public int getCount() {
                 return questionsCount;
@@ -122,10 +119,12 @@ public class QuizMainActivity extends AppCompatActivity {
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == RC_SIGN_IN) {
-            if (resultCode == RESULT_OK) { // Sign-in succeeded, set up the UI
-                Toast.makeText(this, "Signed in", Toast.LENGTH_SHORT).show();
-            } else if (resultCode == RESULT_CANCELED) { // Sign in was canceled by the user, finish the activity
-                Toast.makeText(this, "Signed in canceled", Toast.LENGTH_SHORT).show();
+            if (resultCode == RESULT_OK) {
+                // Sign-in succeeded, set up the UI
+                Toast.makeText(this, Const.TOAST_SIGNED_IN, Toast.LENGTH_SHORT).show();
+            } else if (resultCode == RESULT_CANCELED) {
+                // Sign in was canceled by the user, finish the activity
+                Toast.makeText(this, Const.TOAST_SIGNED_IN_CANCELED, Toast.LENGTH_SHORT).show();
                 finish();
             }
         }

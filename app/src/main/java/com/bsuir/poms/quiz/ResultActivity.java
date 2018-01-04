@@ -8,6 +8,8 @@ import android.view.LayoutInflater;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.bsuir.poms.quiz.constant.Const;
+import com.bsuir.poms.quiz.model.Result;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -19,16 +21,21 @@ import java.util.List;
 
 public class ResultActivity extends AppCompatActivity {
     private RecyclerView mCrimeRecyclerView;
+    FirebaseDatabase database;
+    DatabaseReference resultsDatabaseReference;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_result);
+
         mCrimeRecyclerView = findViewById(R.id.score_recycler_view);
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("results");
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+
+        database = FirebaseDatabase.getInstance();
+        resultsDatabaseReference = database.getReference(Const.RESULTS_DB_KEY);
+
+        resultsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 List<Result> results = new ArrayList<>();
@@ -52,7 +59,6 @@ public class ResultActivity extends AppCompatActivity {
 
         public ResultHolder(LayoutInflater inflater, ViewGroup parent) {
             super(inflater.inflate(R.layout.result_list_item, parent, false));
-
             mEmailTextView = itemView.findViewById(R.id.email_text_view);
             mScoreTextView = itemView.findViewById(R.id.score_text_view);
         }

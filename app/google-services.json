@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "555197981236-769rlojtam4pqahvltkbgfp9m8ipf6d6.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bsuir.poms.quiz",
+            "certificate_hash": "6fee3618fdfe3954b31e9ba24367deac38f058a3"
+          }
+        },
+        {
           "client_id": "555197981236-s97ceuu4tpunhrd40ds57kecllo1kkga.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

@@ -13,7 +13,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 
+import com.bsuir.poms.quiz.constant.Const;
 import com.bsuir.poms.quiz.model.Question;
+import com.bsuir.poms.quiz.model.Result;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -21,9 +23,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class QuestionFragment extends Fragment {
-
-    private static final String QUESTION_ID = "question_id";
-
     private Question mQuestion;
     private boolean[] mAnswers;
     private boolean[] mCheckedAnswers;
@@ -39,13 +38,17 @@ public class QuestionFragment extends Fragment {
 
     private TextView mQuestionText;
 
+    FirebaseDatabase database;
+    DatabaseReference resultsDatabaseReference;
+    DatabaseReference questionsDatabaseReference;
+
     public QuestionFragment() {
     }
 
     public static QuestionFragment newInstance(int id) {
         QuestionFragment fragment = new QuestionFragment();
         Bundle args = new Bundle();
-        args.putInt(QUESTION_ID, id);
+        args.putInt(Const.QUESTION_ID_DB_KEY, id);
         fragment.setArguments(args);
         return fragment;
     }
@@ -58,10 +61,14 @@ public class QuestionFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             ViewGroup container, Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_question, container, false);
+
+        database = FirebaseDatabase.getInstance();
+        resultsDatabaseReference = database.getReference().child(Const.RESULTS_DB_KEY);
+        questionsDatabaseReference = database.getReference().child(Const.QUESTIONS_DB_KEY);
 
         mRadioGroup = view.findViewById(R.id.answer_group);
         mConfirmButton = view.findViewById(R.id.confirm_button);
@@ -76,27 +83,24 @@ public class QuestionFragment extends Fragment {
                         mAnswers[mQuestion.getId()] = false;
                     }
                     mCheckedAnswers[mQuestion.getId()] = true;
+
                     int count = 0;
                     for (boolean checkedAnswer : mCheckedAnswers) {
                         if (checkedAnswer) count++;
                     }
-                    setRadioGroupUnclickable();
+
+                    setRadioGroupNotClickable();
+
                     if (count == mAnswers.length) {
-                        FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-                        // todo: ?
-                        DatabaseReference myRef = database.getReference().child("results");
-                        // DatabaseReference myRef = database.getReference("results"); // твой вариант был
-
                         Result result = new Result();
-                        result.setId(myRef.push().getKey());
+                        result.setId(resultsDatabaseReference.push().getKey());
                         result.setEmail(((App) getActivity().getApplication()).getUser().getEmail());
                         int score = 0;
                         for (boolean rightAnswer : mAnswers) {
                             if (rightAnswer) score++;
                         }
                         result.setScore(score);
-                        myRef.child(result.getId()).setValue(result);
+                        resultsDatabaseReference.child(result.getId()).setValue(result);
                         Intent intent = new Intent(getActivity(), ResultActivity.class);
                         startActivity(intent);
                     }
@@ -109,19 +113,12 @@ public class QuestionFragment extends Fragment {
 
         mQuestionText = view.findViewById(R.id.question_text);
 
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-
-        // todo: ?
-        DatabaseReference myRef = database.getReference().child("questions");
-        // У тебя было так:
-//        DatabaseReference myRef = database.getReference("questions");
-
-        myRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        questionsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
 
                 String questionId = String.valueOf(QuestionFragment.this.getArguments()
-                        .getInt(QUESTION_ID, 0));
+                        .getInt(Const.QUESTION_ID_DB_KEY, 0));
 
                 mQuestion = dataSnapshot.child(questionId).getValue(Question.class);
 
@@ -132,7 +129,9 @@ public class QuestionFragment extends Fragment {
                     mAnswerFour.setText(mQuestion.getFourthAnswer());
 
                     mQuestionText.setText(mQuestion.getQuestion());
-                    if (mCheckedAnswers[mQuestion.getId()]) setRadioGroupUnclickable();
+                    if (mCheckedAnswers[mQuestion.getId()]) {
+                        setRadioGroupNotClickable();
+                    }
                 }
             }
 
@@ -143,7 +142,7 @@ public class QuestionFragment extends Fragment {
         return view;
     }
 
-    private void setRadioGroupUnclickable() {
+    private void setRadioGroupNotClickable() {
         mAnswerOne.setClickable(false);
         mAnswerTwo.setClickable(false);
         mAnswerThree.setClickable(false);
