@@ -25,7 +25,6 @@ public class QuizMainActivity extends AppCompatActivity {
 
     private FirebaseAuth firebaseAuth;
     private FirebaseAuth.AuthStateListener authStateListener;
-    FirebaseUser currentUser;
     FirebaseDatabase database;
     DatabaseReference questionsDatabaseReference;
 
@@ -48,7 +47,7 @@ public class QuizMainActivity extends AppCompatActivity {
             FirebaseUser user = firebaseAuth.getCurrentUser();
             if (user != null) {
                 // User is signed in
-                currentUser = user;
+                ((App) getApplication()).setUser(user);
             } else {
                 // User is signed out
                 startActivityForResult(
@@ -66,25 +65,9 @@ public class QuizMainActivity extends AppCompatActivity {
             }
         };
 
-        // todo: for what?
-        ((App) getApplication()).setUser(currentUser);
-
-        questionsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                currentQuestionId = 0;
-                questionsCount = (int) dataSnapshot.getChildrenCount();
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-            }
-        });
-
         ViewPager mViewPager = findViewById(R.id.question_view_pager);
         mViewPager.setOffscreenPageLimit(2);
 
-        // todo: ?
         FragmentManager fragmentManager = getSupportFragmentManager();
         mViewPager.setAdapter(new FragmentStatePagerAdapter(fragmentManager) {
             @Override
@@ -95,6 +78,19 @@ public class QuizMainActivity extends AppCompatActivity {
             @Override
             public int getCount() {
                 return questionsCount;
+            }
+        });
+
+        questionsDatabaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                currentQuestionId = 0;
+                questionsCount = (int) dataSnapshot.getChildrenCount();
+                mViewPager.getAdapter().notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
             }
         });
 
@@ -122,6 +118,7 @@ public class QuizMainActivity extends AppCompatActivity {
             if (resultCode == RESULT_OK) {
                 // Sign-in succeeded, set up the UI
                 Toast.makeText(this, Const.TOAST_SIGNED_IN, Toast.LENGTH_SHORT).show();
+                ((App) getApplication()).setUser(firebaseAuth.getCurrentUser());
             } else if (resultCode == RESULT_CANCELED) {
                 // Sign in was canceled by the user, finish the activity
                 Toast.makeText(this, Const.TOAST_SIGNED_IN_CANCELED, Toast.LENGTH_SHORT).show();
